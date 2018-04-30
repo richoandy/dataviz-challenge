@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <style>
+    .text {
+      color: white
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+  <script>
+    function readData (cb) {
+      d3.csv("german.csv", function (data) {
+        return data
+      })
+      .then(dataJSON => {
+        cb(dataJSON)
+      })
+    }
+    
+    readData(function (datas) {
+      let stateList = []
+      let voteList = []
+
+      datas.forEach(data => {
+        if (stateList.indexOf(data.state) === -1) {
+          stateList.push(data.state)
+        }
+      })
+
+      datas.forEach(data => {
+        if(data.state === stateList[13]) {
+          voteList.push(data)
+        }
+      })
+
+      voteList.sort(function (a, b) {
+        return +a.total_votes - +b.total_votes
+      })
+
+      let min = +voteList[0].total_votes
+      let max = +voteList[voteList.length - 1].total_votes
+      
+      const svg = d3.select('#container').append('svg')
+        .attr('width', 1000)
+        .attr('height', 500)
+        .style('background', '#eaeaea')
+    
+      const yScale = d3.scaleLinear()
+        .domain([min, max])
+        .range([20, 200])
+    
+      const colorScale = d3.scaleLinear()
+        .domain([min, max])
+        .range(['red', 'teal'])
+
+      svg.selectAll('rect')
+        .data(voteList)
+        .enter()
+        .append('rect')
+        .on('mouseover', function (d) {
+          d3.select(this).style('fill', 'blue')
+        })
+        .on('mouseout', function (d) {
+          d3.select(this).style('fill', colorScale(+d.total_votes))
+        })
+        .transition()
+        .duration(750)
+        .delay(function (d, i) {
+          return i * 50
+        })
+        .attr('x', (d, i) => {
+          return i * 20
+        })
+        .attr('y', (d) => {
+          return 500 - yScale(+d.total_votes)
+        })
+        .attr('width', 15)
+        .attr('height', (d) => {
+          return yScale(+d.total_votes)
+        })
+        .attr('fill', (d) => {
+          return colorScale(+d.total_votes)
+        })
+
+      svg.selectAll('text')
+      .data(voteList)
+      .enter()
+      .append('text')
+      .attr('class', 'text')
+      .attr('transform', (d, i) => {
+        return `translate(${10 + (i * 20)}, 500) rotate(270)`
+      })
+      .text((d) => {
+        return d.area_names.slice(0, 6) + " "
+      })
+
+      svg.selectAll('count')
+      .data(voteList)
+      .enter()
+      .append('text')
+      .attr('transform', (d, i) => {
+        return `translate(${10 + (i * 20)}, ${460 - yScale(d.total_votes)}) rotate(270)`
+      })
+      .text((d) => {
+        return d.total_votes + " votes"
+      })
+    })
+  </script>
+</body>
+</html>

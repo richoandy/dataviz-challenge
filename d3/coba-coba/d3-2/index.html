@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://d3js.org/queue.v1.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+</head>
+<body>
+  <div id="container"></div>
+  <div id="map"></div>
+  <script>
+    function readData (cb) {
+      d3.csv("results.csv", function (data) {
+        return data
+      })
+      .then(dataJSON => {
+        cb(dataJSON)
+      })
+    }
+    const data = [
+      {name: 'Ireland', income: 53000, life: 78, pop: 6378, color: 'green'},
+      {name: 'Indonesia', income: 72000, life: 88, pop: 1250, color: 'red'},
+      {name: 'Ghana', income: 39990, life: 98, pop: 2378, color: 'blue'},
+      {name: 'England', income: 50000, life: 68, pop: 6380, color: 'yellow'},
+      {name: 'France', income: 12000, life: 78, pop: 6378, color: 'pink'}
+    ]
+    const svg = d3.select('#container').append('svg')
+    .attr('width', 500)
+    .attr('height', 500)
+    .style('background-color', '#666666')
+
+    svg.selectAll('circle')
+      .data(data)
+      .enter()
+      .append('circle')
+        .attr('id', function (d) {
+          return d.name
+        })
+        .attr('cx', function (d) {
+          return d.income / 200
+        })
+        .attr('cy', function (d) {
+          return d.life *3
+        })
+        .attr('r', function (d) {
+          return d.pop / 1000 * 3
+        })
+        .attr('fill', function (d) {
+          return d.color
+        })
+      .append('svg:title')
+        .text( function (d) {
+          return d.name
+        })
+  </script>
+</body>
+</html>
