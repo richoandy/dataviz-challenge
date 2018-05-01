@@ -13,7 +13,8 @@
   </style>
 </head>
 <body>
-  <div id="container"></div>
+  <div id="container">bar chart</div>
+  <div id="piechart">pie chart</div>
   <script>
     function readData (cb) {
       d3.csv("german.csv", function (data) {
@@ -23,6 +24,90 @@
         cb(dataJSON)
       })
     }
+
+    //pieChart
+    readData(function (datas) {
+      let stateList = []
+      let voteList = []
+      datas.forEach(data => {
+        if (stateList.indexOf(data.state) === -1) {
+          stateList.push(data.state)
+        }
+      })
+
+      datas.forEach(data => {
+        if(data.state === stateList[13]) {
+          voteList.push(data)
+        }
+      })
+
+      voteList.sort(function (a, b) {
+        return +a.total_votes - +b.total_votes
+      })
+
+      voteList = voteList.splice(0, 4)
+      console.log(voteList)
+
+      let min = +voteList[0].total_votes
+      let max = +voteList[voteList.length - 1].total_votes
+      
+      const colorScale = d3.scaleLinear()
+        .domain([min, max])
+        .range(['red', 'teal'])
+
+      let margin = {
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 20
+      }
+
+      let width = 500 - margin.right - margin.left
+      let height = 500 - margin.bottom - margin.top
+      radius = width / 2
+      
+      //arc generator
+      var arc = d3.arc()
+        .outerRadius(radius - 10)
+        .innerRadius(0)
+      
+      var labelArc = d3.arc()
+        .outerRadius(radius - 50)
+        .innerRadius(radius - 50)
+
+      
+      var pie = d3.pie()
+        .sort(null) 
+        .value(function (d) {
+          return d.total_votes
+        })
+      
+      var svg = d3.select('#piechart').append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', 'translate('+ width / 2 + ',' + height/2 + ')')
+      
+      var g = svg.selectAll('.arc')
+        .data(pie(voteList))
+        .enter().append('g')
+        .attr('class', 'arc')
+
+      g.append('path')
+        .attr('d', arc)
+        .style('fill', 'teal')
+        
+         
+      g.append('text')
+        .attr('transform', function (d) {
+          return 'translate(' + labelArc.centroid(d) + ')'
+        })
+        .attr('dy', '.35em')
+        .text(function (d) {
+          console.log(d)
+          return d.data.area_names
+        })
+    })
     
     readData(function (datas) {
       let stateList = []
