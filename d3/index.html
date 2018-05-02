@@ -69,12 +69,19 @@
       //arc generator
       var arc = d3.arc()
         .outerRadius(radius - 10)
-        .innerRadius(0)
+        .innerRadius(radius - 70)
       
       var labelArc = d3.arc()
         .outerRadius(radius - 50)
         .innerRadius(radius - 50)
-
+      
+      var color =d3.scaleOrdinal()
+        .range([
+          "BBDEFB",
+          "98CAF9",
+          "64B5F6",
+          "42A5F5"
+        ])
       
       var pie = d3.pie()
         .sort(null) 
@@ -93,9 +100,26 @@
         .enter().append('g')
         .attr('class', 'arc')
 
+        function pieTween (b) {
+          b.innerRadius = 0
+          var i = d3.interpolate({
+            startAngle: 0, 
+            endAngle: 0
+            }, b)
+          return function (t) {
+            return arc(i(t))
+          }
+        }
+
       g.append('path')
         .attr('d', arc)
-        .style('fill', 'teal')
+        .style('fill', function(d) {
+          return color(d.data.total_votes)
+        })
+        .transition()
+        .ease(d3.easeLinear)
+        .duration(2000)
+        .attrTween("d", pieTween)
         
          
       g.append('text')
